@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据安全智能体 - AI自主运营</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --sidebar-width: 236px;
+            --header-height: 48px;
+            --bg-primary: #0a0b0f;
+            --bg-secondary: #111216;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-primary: #ffffff;
+            --text-secondary: #737a87;
+            --accent-blue: #3b91ff;
+            --accent-purple: #c069ff;
+            --gradient-primary: linear-gradient(56deg, #3b91ff 3.23%, #0d5eff 51.11%, #c069ff 98.65%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 布局容器 */
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 左侧导航栏 */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--gradient-primary);
+            border-radius: 6px;
+            margin-right: 8px;
+        }
+
+        .logo-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .nav-menu {
+            padding: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            margin-bottom: 4px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: rgba(59, 145, 255, 0.1);
+            color: var(--accent-blue);
+        }
+
+        .nav-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 10px;
+            opacity: 0.7;
+        }
+
+        .nav-item:hover .nav-icon,
+        .nav-item.active .nav-icon {
+            opacity: 1;
+        }
+
+        .ai-badge {
+            margin-left: auto;
+            background: var(--gradient-primary);
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .submenu {
+            margin-left: 26px;
+            border-left: 1px solid var(--border-color);
+            padding-left: 12px;
+        }
+
+        /* 主内容区 */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            padding-top: var(--header-height);
+        }
+
+        /* 顶部导航 */
+        .header {
+            height: var(--header-height);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            z-index: 99;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 16px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            background: transparent;
+            border: none;
+        }
+
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .notification-dot {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 6px;
+            height: 6px;
+            background: #ff4d4f;
+            border-radius: 50%;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* 仪表板内容 */
+        .dashboard {
+            min-height: calc(100vh - var(--header-height));
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 背景网格 */
+        .bg-grid {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .grid-line-h {
+            position: absolute;
+            left: 236px;
+            right: 0;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .grid-line-v {
+            position: absolute;
+            top: 48px;
+            bottom: 0;
+            width: 1px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* 装饰条 */
+        .decoration-bars {
+            position: absolute;
+            top: 128px;
+            left: 236px;
+            right: 0;
+            height: 200px;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+
+        .deco-bar {
+            position: absolute;
+            width: 33px;
+            border-radius: 4px;
+            background: linear-gradient(180deg, rgba(59, 145, 255, 0.3), rgba(192, 105, 255, 0.1));
+        }
+
+        /* Hero区域 */
+        .hero-section {
+            position: relative;
+            padding: 40px 40px 0;
+            text-align: center;
+        }
+
+        .hero-logo {
+            width: 304px;
+            height: 220px;
+            margin: 0 auto 20px;
+            position: relative;
+        }
+
+        .hero-logo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            opacity: 0.8;
+        }
+
+        .hero-glow {
+            position: absolute;
+            width: 148px;
+            height: 148px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            backdrop-filter: blur(2px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .hero-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 8px;
+        }
+
+        .title-main {
+            font-size: 36px;
+            font-weight: 500;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .title-divider {
+            width: 1px;
+            height: 22px;
+            background: var(--border-color);
+        }
+
+        .title-sub {
+            font-size: 36px;
+            font-weight: 500;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .hero-subtitle span {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 500;
+        }
+
+        /* 数据卡片区域 */
+        .data-section {
+            display: flex;
+            gap: 24px;
+            padding: 40px 40px 0;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .data-card {
+            flex: 1;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 250px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .card-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-title {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .card-value {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .trend-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            background: rgba(255, 77, 79, 0.1);
+            color: #ff4d4f;
+            font-size: 12px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .card-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 16px 0;
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tag-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+        }
+
+        .tag-arrow {
+            font-size: 10px;
+            opacity: 0.5;
+        }
+
+        .more-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            margin-top: 12px;
+        }
+
+        .more-link:hover {
+            color: var(--text-primary);
+        }
+
+        /* 快捷操作区 */
+        .quick-actions {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 40px;
+        }
+
+        .quick-title {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .quick-chips {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .quick-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-chip:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+        }
+
+        .quick-chip-icon {
+            width: 14px;
+            height: 14px;
+            opacity: 0.6;
+        }
+
+        .quick-chip-divider {
+            width: 1px;
+            height: 12px;
+            background: var(--border-color);
+        }
+
+        /* 输入框 */
+        .chat-input {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+        }
+
+        .chat-placeholder {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .chat-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .chat-action-btn {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+
+        .chat-action-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+        }
+
+        /* 顶部栏右侧 */
+        .top-info {
+            position: fixed;
+            top: 60px;
+            right: 40px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            z-index: 50;
+        }
+
+        .usage-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .usage-dot {
+            width: 8px;
+            height: 8px;
+            background: #52c41a;
+            border-radius: 50%;
+        }
+
+        .usage-count {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .tab-switcher {
+            display: flex;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 3px;
+        }
+
+        .tab-btn {
+            padding: 4px 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            background: transparent;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-primary);
+        }
+
+        /* SVG Icons */
+        .icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        .icon-small {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1200px) {
+            .data-section {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- 左侧导航栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon"></div>
+                <span class="logo-text">LOGO</span>
+            </div>
+            <nav class="nav-menu">
+                <div class="nav-item">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                    <span>概览</span>
+                </div>
+                <div class="nav-item">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                    <span>数据识别</span>
+                </div>
+                <div class="nav-item">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+                    <span>数据防护</span>
+                </div>
+                <div class="nav-item">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                    <span>审计分析</span>
+                </div>
+                <div class="nav-item active">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+                    <span>数据安全智能体</span>
+                    <span class="ai-badge">AI</span>
+                </div>
+                <div class="submenu">
+                    <div class="nav-item active">
+                        <span style="margin-left: 26px;">风险员工</span>
+                    </div>
+                    <div class="nav-item">
+                        <span style="margin-left: 26px;">数据态势</span>
+                    </div>
+                    <div class="nav-item">
+                        <span style="margin-left: 26px;">调查审计</span>
+                    </div>
+                    <div class="nav-item">
+                        <span style="margin-left: 26px;">策略中心</span>
+                    </div>
+                    <div class="nav-item">
+                        <span style="margin-left: 26px;">数据识别</span>
+                    </div>
+                    <div class="nav-item">
+                        <span style="margin-left: 26px;">水印管理</span>
+                    </div>
+                </div>
+                <div class="nav-item">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L.33 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                    <span>系统设置</span>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 顶部导航 -->
+            <header class="header">
+                <div class="header-actions">
+                    <div class="icon-btn">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+                        <span class="notification-dot"></span>
+                    </div>
+                    <button class="header-btn">
+                        <svg class="icon icon-small" viewBox="0 0 24 24"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+                        <span>智能助手</span>
+                    </button>
+                    <button class="header-btn">
+                        <svg class="icon icon-small" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+                        <span>权益数据</span>
+                    </button>
+                    <div class="avatar">U</div>
+                </div>
+            </header>
+
+            <!-- 仪表板内容 -->
+            <div class="dashboard">
+                <!-- 背景网格 -->
+                <div class="bg-grid">
+                    <!-- 水平网格线 -->
+                    <div class="grid-line-h" style="top: 88px;"></div>
+                    <div class="grid-line-h" style="top: 128px;"></div>
+                    <div class="grid-line-h" style="top: 168px;"></div>
+                    <div class="grid-line-h" style="top: 208px;"></div>
+                    <div class="grid-line-h" style="top: 248px;"></div>
+                    <div class="grid-line-h" style="top: 288px;"></div>
+                    <div class="grid-line-h" style="top: 328px;"></div>
+                    <!-- 垂直网格线 -->
+                    <div class="grid-line-v" style="left: 403px;"></div>
+                    <div class="grid-line-v" style="left: 537px;"></div>
+                    <div class="grid-line-v" style="left: 704px;"></div>
+                    <div class="grid-line-v" style="left: 838px;"></div>
+                    <div class="grid-line-v" style="left: 1005px;"></div>
+                    <div class="grid-line-v" style="left: 1139px;"></div>
+                </div>
+
+                <!-- 装饰条 -->
+                <div class="decoration-bars">
+                    <div class="deco-bar" style="left: 301px; height: 40px; top: 0;"></div>
+                    <div class="deco-bar" style="left: 403px; height: 40px; top: 40px;"></div>
+                    <div class="deco-bar" style="left: 537px; height: 40px; top: 0;"></div>
+                    <div class="deco-bar" style="left: 637px; height: 40px; top: 40px;"></div>
+                    <div class="deco-bar" style="left: 704px; height: 40px; top: -40px;"></div>
+                    <div class="deco-bar" style="left: 938px; height: 40px; top: 0;"></div>
+                    <div class="deco-bar" style="left: 1005px; height: 40px; top: -40px;"></div>
+                    <div class="deco-bar" style="left: 1139px; height: 40px; top: 0;"></div>
+                </div>
+
+                <!-- Hero区域 -->
+                <section class="hero-section">
+                    <div class="hero-logo">
+                        <div class="hero-glow"></div>
+                    </div>
+                    <div class="hero-title">
+                        <h1 class="title-main">数据安全智能体</h1>
+                        <div class="title-divider"></div>
+                        <span class="title-sub">AI 自主运营</span>
+                    </div>
+                    <p class="hero-subtitle">
+                        <span>7*24</span> 小时自动化调查和推理，发现风险事件，筑牢数据安全堡垒
+                    </p>
+                </section>
+
+                <!-- 数据卡片 -->
+                <section class="data-section">
+                    <!-- 风险事件卡片 -->
+                    <div class="data-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; color: #737a87;">
+                                    <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.054 0 1.918-.816 1.995-1.85L21 5.5H3l.943 11.65c.077 1.034.941 1.85 1.995 1.85z"/>
+                                </svg>
+                            </div>
+                            <span class="card-title">风险事件</span>
+                        </div>
+                        <div class="card-value">
+                            283,111
+                            <span class="trend-badge">↑ 12.5%</span>
+                        </div>
+                        <div class="card-divider"></div>
+                        <div class="tag-list">
+                            <div class="tag-item">
+                                个人网盘 (百度网盘) 上传敏感
+                                <span class="tag-arrow">↗</span>
+                            </div>
+                            <div class="tag-item">
+                                短时间内批量通过个人聊天工具外发
+                                <span class="tag-arrow">↗</span>
+                            </div>
+                            <div class="tag-item">
+                                批量通过个人聊天工具外发
+                                <span class="tag-arrow">↗</span>
+                            </div>
+                            <div class="tag-item">
+                                短时间内批量通过个人聊天工具外发
+                                <span class="tag-arrow">↗</span>
+                            </div>
+                        </div>
+                        <div class="more-link">
+                            非企业授权网盘存储敏感商务协议
+                            <span>↗</span>
+                        </div>
+                        <div class="more-link" style="float: right;">
+                            更多
+                            <span>→</span>
+                        </div>
+                    </div>
+
+                    <!-- 风险员工卡片 -->
+                    <div class="data-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 18px; height: 18px; color: #737a87;">
+                                    <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                            </div>
+                            <span class="card-title">风险员工</span>
+                        </div>
+                        <div class="card-value">
+                            2,811
+                            <span class="trend-badge">↑ 5.2%</span>
+                        </div>
+                        <div class="card-divider"></div>
+                        <div class="tag-list">
+                            <div class="tag-item">
+                                苏家华｜字节跳动/Data
+                                <span class="tag-arrow">↗</span>
+                            </div>
+                            <div class="tag-item">
+                                周周｜字节跳动/Data/企业合作
+                                <span class="tag-arrow">↗</span>
+                            </div>
+                            <div class="tag-item">
+                                明明｜字节跳动/Data/企业合作
+                                <span class="tag-arrow">↗</span>
+                            </div>
+                            <div class="tag-item">
+                                小花｜字节跳动/Data/企业合作
+                                <span class="tag-arrow">↗</span>
+                            </div>
+                        </div>
+                        <div class="more-link">
+                            小华｜字节跳动/Data/企业合作/企业合作与解决方案
+                            <span>↗</span>
+                        </div>
+                        <div class="more-link" style="float: right;">
+                            更多
+                            <span>→</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 快捷操作区 -->
+                <section class="quick-actions">
+                    <h3 class="quick-title">猜你想问 💫</h3>
+                    <div class="quick-chips">
+                        <div class="quick-chip">
+                            <svg class="quick-chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                            <span>事件分析</span>
+                            <div class="quick-chip-divider"></div>
+                            <span>帮我查询风险事件</span>
+                        </div>
+                        <div class="quick-chip">
+                            <svg class="quick-chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <span>员工报告</span>
+                            <div class="quick-chip-divider"></div>
+                            <span>帮我解读风险员工</span>
+                        </div>
+                    </div>
+
+                    <!-- 输入框 -->
+                    <div class="chat-input">
+                        <div class="chat-placeholder">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <path d="M21 21l-4.35-4.35"/>
+                            </svg>
+                            <span>让数据安全智能体自动帮你完成一次巡检吧</span>
+                        </div>
+                        <div class="chat-actions">
+                            <div class="chat-action-btn">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+                                    <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+                                </svg>
+                            </div>
+                            <div class="chat-action-btn" style="color: var(--accent-blue);">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"/>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- 顶部信息区 -->
+    <div class="top-info">
+        <div class="usage-info">
+            <span class="usage-dot"></span>
+            <span>可用</span>
+            <span class="usage-count">15,000</span>
+            <span>次</span>
+        </div>
+        <div class="tab-switcher">
+            <button class="tab-btn active">全部风险</button>
+            <button class="tab-btn">仅看我关注的</button>
+        </div>
+    </div>
+
+    <script>
+        // 简单的交互效果
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                if (!this.closest('.submenu')) {
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Tab切换
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // 快捷操作点击
+        document.querySelectorAll('.quick-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                const text = this.querySelector('span:last-child').textContent;
+                console.log('快捷操作:', text);
+            });
+        });
+    </script>
+</body>
+</html>
